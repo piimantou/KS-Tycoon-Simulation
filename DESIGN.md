@@ -76,8 +76,18 @@ kstycoon/
   scenarios/
     south_korea_y0.py   the 1924 RoK validation fixture
   cli.py          thin driver: new / tick / report
+  web.py          first-pass local web UI (stdlib http.server + embedded SPA)
 tests/            stdlib unittest
 ```
+
+### Web UI (first pass)
+`python -m kstycoon.web` serves a single-page console at `127.0.0.1:8000`. It is
+dependency-free: a stdlib HTTP server exposes `GET /api/state` and
+`POST /api/tick` (decisions in, report + new state out), and the embedded
+vanilla-JS page lets the umpire set tax/budget-split/readiness, fund projects,
+queue procurement orders, and run the year. State persists to a JSON file.
+Roadmap: initial-state *editing* (not just per-turn directives), multi-nation
+selection, and richer charts.
 
 ## The annual tick (`resolve.tick`)
 
@@ -122,8 +132,9 @@ python -m unittest discover -s tests
   estimates come next (likely via an importer for the existing `.xlsx`).
 - **Three procurement channels** (Domestic / Japanese / Western imports) — V1
   uses a single generic import channel; split later.
-- **Pops depth** — strata exist with needs/loyalty; income/wage formation and
-  tax incidence are stubbed (budgets taken as given) and will be fleshed out.
+- **Pops depth** — income/wages, a flat income tax, and computed budgets are in
+  (done). Still ahead: progressive/per-strata tax incidence, wealth
+  accumulation, migration, and demographic growth tied to standard of living.
 - **Laws/policies** as first-class parameter modifiers (tariffs, franchise,
   land reform, mobilization) beyond the readiness lever.
 - **Stockpiles & ammo** consumption, capital works (depots/airfields/forts),

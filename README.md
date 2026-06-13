@@ -5,9 +5,8 @@ umpire-run Kriegsspiel. The economy feeds procurement, procurement and manpower
 feed the (separate) tactical layer. See [`DESIGN.md`](DESIGN.md) for the full
 design and the decisions behind it.
 
-This repo currently contains the **deterministic engine core** plus the
-**South Korea 1924** validation scenario. A local web UI for the umpire comes
-next; for now the engine is driven from the command line.
+This repo contains the **deterministic engine core**, the **South Korea 1924**
+validation scenario, and a **first-pass local web UI** for the umpire.
 
 ## Requirements
 
@@ -28,6 +27,21 @@ python -m kstycoon.cli tick state.json -o state_1925.json
 # run the tests
 python -m unittest discover -s tests
 ```
+
+## Umpire web console
+
+A dependency-free local web app (stdlib `http.server`): the umpire keys in the
+year's directives — income tax, civilian/defense budget split, mobilisation
+readiness, which projects to fund, and procurement orders — then runs the
+financial year and reads back the handoff.
+
+```bash
+python -m kstycoon.web                 # http://127.0.0.1:8000
+python -m kstycoon.web --port 9000 --state mygame.json
+```
+
+State is held in memory and persisted to the `--state` JSON file after each
+year, so a game can be paused and resumed.
 
 ## What the engine does
 

@@ -111,5 +111,36 @@ class TickTests(unittest.TestCase):
         self.assertGreater(res.state.arms["small_arms"].capacity, before)
 
 
+class WebAppTests(unittest.TestCase):
+    def _app(self):
+        import tempfile
+
+        from kstycoon.web import _App
+
+        path = tempfile.mktemp(suffix=".json")
+        return _App(path)
+
+    def test_apply_and_tick_applies_decisions(self):
+        app = self._app()
+        out = app.apply_and_tick(
+            {
+                "income_tax_rate": 0.20,
+                "civilian_share": 0.5,
+                "defense_share": 0.5,
+                "readiness": 1,
+                "new_project_ids": ["bosco"],
+                "procurement_orders": [
+                    {"unit_token_id": "rifles", "channel": "import", "quantity": 50}
+                ],
+            }
+        )
+        self.assertIn("report", out)
+        self.assertEqual(out["state"]["year"], 1925)
+        self.assertEqual(out["state"]["government"]["income_tax_rate"], 0.20)
+        self.assertEqual(out["result"]["delivered"]["rifles"]["import"], 50)
+        # state persisted across the tick
+        self.assertEqual(app.state.year, 1925)
+
+
 if __name__ == "__main__":
     unittest.main()
