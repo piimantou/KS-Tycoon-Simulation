@@ -70,6 +70,36 @@ class TickTests(unittest.TestCase):
         res = tick(self.state)
         self.assertTrue(any(res.training_tokens.values()))
 
+    def test_incomes_distributed_with_inequality(self):
+        res = tick(self.state)
+        pops = res.state.pops
+        for p in pops.values():
+            self.assertGreater(p.income, 0.0)
+        # owners (upper) earn far more per capita than peasants (lower)
+        upper_pc = pops["upper"].income / pops["upper"].size
+        rural_pc = pops["rural_lower"].income / pops["rural_lower"].size
+        self.assertGreater(upper_pc, rural_pc)
+
+    def test_revenue_funds_budget(self):
+        res = tick(self.state)
+        g = res.state.government
+        total_income = sum(p.income for p in res.state.pops.values())
+        # revenue is at least the income-tax take (plus any state surplus)
+        self.assertGreaterEqual(g.revenue, total_income * g.income_tax_rate - 1.0)
+        self.assertAlmostEqual(g.defense_budget, g.revenue * g.defense_share, places=2)
+        self.assertAlmostEqual(g.civilian_budget, g.revenue * g.civilian_share, places=2)
+
+    def test_gdp_calibrated_near_source(self):
+        res = tick(self.state)
+        pc = res.state.gdp / res.state.manpower.population
+        self.assertTrue(350 <= pc <= 410, f"GDP/capita {pc:.0f} off calibration")
+
+    def test_higher_tax_raises_revenue(self):
+        low = tick(copy.deepcopy(self.state)).state.government.revenue
+        self.state.government.income_tax_rate = 0.30
+        high = tick(self.state).state.government.revenue
+        self.assertGreater(high, low)
+
     def test_project_completes_after_lead_time(self):
         s = self.state
         # BOSCO has a 3-year lead; small_arms capacity should jump by +60 then.

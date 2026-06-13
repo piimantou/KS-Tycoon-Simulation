@@ -49,7 +49,12 @@ class Sector:
     efficiency: float = 1.0                    # capital/power/skill multiplier
     inputs_per_output: dict[str, float] = field(default_factory=dict)
     essential: bool = False                    # labour shielded from conscription
-    state_owned: bool = False
+    state_owned: bool = False                  # surplus accrues to the state, not owners
+    # income formation: value-added splits into wages (to workers) and surplus
+    # (to owners, or to the treasury if state-owned).
+    worker_pop: Optional[str] = None           # stratum that supplies labour & earns wages
+    owner_pop: Optional[str] = None             # stratum that receives the surplus
+    wage_share: float = 0.6                    # fraction of value-added paid as wages
 
 
 @dataclass
@@ -64,6 +69,8 @@ class PopStratum:
     needs_per_capita: dict[str, float] = field(default_factory=dict)  # good -> qty/yr
     political_weight: float = 0.0
     loyalty: float = 0.5                       # 0..1, updated from standard of living
+    income: float = 0.0                        # gross annual income (currency), computed
+    sol: float = 1.0                           # standard of living 0..1, computed
 
 
 # --------------------------------------------------------------------------- #
@@ -162,6 +169,14 @@ class Manpower:
 class Government:
     treasury: float
     debt: float = 0.0
+    # --- tax policy (player levers) ---
+    income_tax_rate: float = 0.0               # flat tax on pop income
+    tariff_rate: float = 0.0                   # surcharge on imported-good consumption
+    # --- how computed revenue is split into spending envelopes ---
+    civilian_share: float = 0.5                # of revenue -> development
+    defense_share: float = 0.5                 # of revenue -> procurement + upkeep
+    # --- computed each tick ---
+    revenue: float = 0.0
     civilian_budget: float = 0.0               # ministries / development envelope
     defense_budget: float = 0.0                # procurement + upkeep envelope
 
@@ -204,6 +219,9 @@ class GameState:
     # ---- macro snapshot (recomputed each tick) ----
     gdp: float = 0.0
     stability: float = 0.5
+    # Converts model output-value (price units) to headline currency. A light
+    # calibration so wages/taxes/budget are denominated in the scenario's $.
+    currency_scale: float = 1.0
 
     @property
     def labour_force(self) -> float:

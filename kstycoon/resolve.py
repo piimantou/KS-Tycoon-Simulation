@@ -131,12 +131,83 @@ def _produce(state: m.GameState) -> tuple[dict[str, float], dict[str, float]]:
     return supply, input_demand
 
 
+def _basket_cost(pop: m.PopStratum, state: m.GameState) -> float:
+    """Per-capita cost of a pop's needs basket, in currency."""
+    cost = 0.0
+    for gid, per_cap in pop.needs_per_capita.items():
+        g = state.goods.get(gid)
+        if g:
+            cost += per_cap * g.price
+    return cost * state.currency_scale
+
+
+def _affordability(pop: m.PopStratum, state: m.GameState) -> float:
+    """Fraction of the needs basket a pop can afford from disposable income.
+    With no income recorded yet (first tick), assume subsistence (1.0)."""
+    if pop.income <= 0 or pop.size <= 0:
+        return 1.0
+    basket = _basket_cost(pop, state)
+    if basket <= 0:
+        return 1.0
+    disposable = (pop.income * (1.0 - state.government.income_tax_rate)) / pop.size
+    return max(0.0, min(1.0, disposable / basket))
+
+
 def _consumption(state: m.GameState) -> dict[str, float]:
+    """Demand = needs × what pops can afford (income from the prior year)."""
     demand: dict[str, float] = {}
     for pop in state.pops.values():
+        afford = _affordability(pop, state)
         for gid, per_cap in pop.needs_per_capita.items():
-            demand[gid] = demand.get(gid, 0.0) + pop.size * per_cap
+            demand[gid] = demand.get(gid, 0.0) + pop.size * per_cap * afford
     return demand
+
+
+def _incomes(state: m.GameState) -> tuple[float, float]:
+    """Distribute each sector's value-added into wages (to workers) and surplus
+    (to owners, or the treasury if state-owned). Sets pop.income; returns
+    (state_enterprise_surplus, gdp_currency)."""
+    scale = state.currency_scale
+    for pop in state.pops.values():
+        pop.income = 0.0
+    state_surplus = 0.0
+    gdp = 0.0
+    for s in state.sectors.values():
+        out = s.labour * s.productivity * s.efficiency
+        if out <= 0:
+            continue
+        if s.output_good and s.output_good in state.goods:
+            gross = out * state.goods[s.output_good].price
+        else:
+            gross = out  # services priced at 1 model unit/output
+        input_cost = sum(
+            out * qty * state.goods[gid].price
+            for gid, qty in s.inputs_per_output.items()
+            if gid in state.goods
+        )
+        va = max(0.0, gross - input_cost) * scale
+        gdp += va
+        wages = va * s.wage_share
+        surplus = va - wages
+        if s.worker_pop and s.worker_pop in state.pops:
+            state.pops[s.worker_pop].income += wages
+        else:
+            surplus += wages  # unmapped labour -> folds into surplus
+        if s.state_owned:
+            state_surplus += surplus
+        elif s.owner_pop and s.owner_pop in state.pops:
+            state.pops[s.owner_pop].income += surplus
+        else:
+            state_surplus += surplus
+    return state_surplus, gdp
+
+
+def _revenue_and_budget(state: m.GameState, state_surplus: float) -> None:
+    g = state.government
+    income_tax = sum(p.income for p in state.pops.values()) * g.income_tax_rate
+    g.revenue = income_tax + state_surplus
+    g.civilian_budget = g.revenue * g.civilian_share
+    g.defense_budget = g.revenue * g.defense_share
 
 
 def _procure(
@@ -249,7 +320,9 @@ def _man_the_force(
 def _standard_of_living(
     state: m.GameState, supply: dict[str, float], demand: dict[str, float]
 ) -> None:
-    """Update loyalty from how well goods demand is met, then roll up stability."""
+    """Standard of living combines what pops can *afford* (income vs basket) and
+    what is physically *available* (supply vs demand). Loyalty drifts toward SoL,
+    then rolls up into a politically-weighted stability score."""
     avail = {}
     for gid in set(list(supply) + list(demand)):
         d = demand.get(gid, 0.0)
@@ -258,28 +331,22 @@ def _standard_of_living(
     total_w = 0.0
     weighted = 0.0
     for pop in state.pops.values():
+        afford = _affordability(pop, state)
         if not pop.needs_per_capita:
-            sat = 1.0
+            availability = 1.0
         else:
-            sat = sum(avail.get(g, 1.0) for g in pop.needs_per_capita) / len(
+            availability = sum(avail.get(g, 1.0) for g in pop.needs_per_capita) / len(
                 pop.needs_per_capita
             )
-        pop.loyalty = 0.7 * pop.loyalty + 0.3 * sat   # drift toward satisfaction
+        pop.sol = min(afford, availability)
+        pop.loyalty = 0.7 * pop.loyalty + 0.3 * pop.sol
         w = max(pop.political_weight, 1e-9)
         weighted += pop.loyalty * w
         total_w += w
     if total_w > 0:
-        # blend prior stability with the politically-weighted loyalty
-        state.stability = max(0.0, min(1.0, 0.5 * state.stability + 0.5 * (weighted / total_w)))
-
-
-def _gdp(state: m.GameState, supply: dict[str, float]) -> float:
-    total = 0.0
-    for gid, qty in supply.items():
-        good = state.goods.get(gid)
-        if good:
-            total += qty * good.price
-    return total
+        state.stability = max(
+            0.0, min(1.0, 0.5 * state.stability + 0.5 * (weighted / total_w))
+        )
 
 
 # --------------------------------------------------------------------------- #
@@ -308,7 +375,11 @@ def tick(state: m.GameState, cfg: Config | None = None) -> TickResult:
     res.prices = {gid: g.price for gid, g in s.goods.items()}
     res.sector_output = supply
 
-    # 7. procurement
+    # 6b. income formation -> tax revenue -> spending envelopes
+    state_surplus, s.gdp = _incomes(s)
+    _revenue_and_budget(s, state_surplus)
+
+    # 7. procurement (against the freshly-computed defense envelope)
     res.delivered, res.procurement_cost = _procure(s, s.government.defense_budget, w)
 
     # 8. man the force
@@ -335,8 +406,7 @@ def tick(state: m.GameState, cfg: Config | None = None) -> TickResult:
     # 10. stability
     _standard_of_living(s, supply, demand)
 
-    # 11. macro + advance year
-    s.gdp = _gdp(s, supply)
+    # 11. macro + advance year (gdp already set from value-added in 6b)
     s.manpower.active_operational = res.manpower_operational
     s.manpower.active_training = sum(
         t * s.units[tid].men_per_token for tid, t in res.training_tokens.items()

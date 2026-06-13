@@ -42,22 +42,27 @@ def _goods() -> dict[str, m.Good]:
 
 def _sectors() -> dict[str, m.Sector]:
     s = [
+        # Agriculture: ~70% Japanese-owned land -> low wage share, surplus to elite.
         m.Sector("agriculture", "Agriculture", "rice",
-                 labour=LABOUR_FORCE * 0.71, productivity=0.70,
-                 essential=True),
+                 labour=LABOUR_FORCE * 0.71, productivity=0.70, essential=True,
+                 worker_pop="rural_lower", owner_pop="upper", wage_share=0.50),
         m.Sector("fishing", "Coastal Fishing", "fish",
-                 labour=LABOUR_FORCE * 0.02, productivity=2.5,
-                 essential=True),
+                 labour=LABOUR_FORCE * 0.02, productivity=2.5, essential=True,
+                 worker_pop="rural_lower", owner_pop="middle", wage_share=0.60),
         m.Sector("extraction", "Extraction (coal)", "coal",
-                 labour=LABOUR_FORCE * 0.02, productivity=1.5),
+                 labour=LABOUR_FORCE * 0.02, productivity=1.5,
+                 worker_pop="urban_lower", owner_pop="upper", wage_share=0.55),
         m.Sector("light_industry", "Light Industry (textiles)", "textiles",
                  labour=LABOUR_FORCE * 0.05, productivity=3.0,
-                 inputs_per_output={"machinery": 0.02}),
+                 inputs_per_output={"machinery": 0.02},
+                 worker_pop="urban_lower", owner_pop="upper", wage_share=0.60),
         m.Sector("heavy_industry", "Heavy Industry (steel)", "steel",
                  labour=LABOUR_FORCE * 0.01, productivity=0.5,
-                 inputs_per_output={"coal": 1.5}),
+                 inputs_per_output={"coal": 1.5},
+                 worker_pop="urban_lower", owner_pop="upper", wage_share=0.60),
         m.Sector("services", "Services", None,
-                 labour=LABOUR_FORCE * 0.11, productivity=1.0),
+                 labour=LABOUR_FORCE * 0.11, productivity=1.0,
+                 worker_pop="middle", owner_pop="middle", wage_share=0.70),
     ]
     return {x.id: x for x in s}
 
@@ -175,9 +180,16 @@ def build() -> m.GameState:
         government=m.Government(
             treasury=0.0,
             debt=0.0,
-            civilian_budget=210_000_000,   # $200M departments + $10M reserve
-            defense_budget=220_000_000,    # procurement sheet budget
+            # Budgets are now *computed* from tax revenue. These levers are
+            # calibrated so Y0 lands near the source figures: ~$200M civilian
+            # ($200M departments + reserve) and ~$220M defense.
+            income_tax_rate=0.10,
+            tariff_rate=0.0,
+            civilian_share=0.455,   # -> ~$200M civilian (departments + reserve)
+            defense_share=0.500,    # -> ~$220M defense (procurement sheet)
         ),
+        # Calibrated so value-added ≈ the headline GDP of $4.4bn ($381/capita).
+        currency_scale=1150.0,
         gdp=4_400_000_000,
         stability=0.5,
     )

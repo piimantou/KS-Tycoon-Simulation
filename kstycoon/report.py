@@ -13,13 +13,27 @@ def render(res: TickResult) -> str:
     L.append(f"# {s.nation} — End of FY{s.year - 1} → FY{s.year}")
     L.append("")
 
+    g = s.government
     L.append("## Economy")
-    # NOTE: GDP here is the value of production in *model price units*, not yet
-    # calibrated to the scenario's headline currency figure ($4.4bn / $381 pc).
-    # Mapping model units -> currency is a balancing/calibration task (see DESIGN.md).
-    L.append(f"- Output value (model units): {s.gdp:,.0f}")
+    L.append(f"- GDP: ${s.gdp:,.0f}  (per capita ${s.gdp / s.manpower.population:,.0f})")
     L.append(f"- Stability: {s.stability:.2f}")
-    L.append(f"- Treasury: ${s.government.treasury:,.0f}   Debt: ${s.government.debt:,.0f}")
+    L.append(f"- Treasury: ${g.treasury:,.0f}   Debt: ${g.debt:,.0f}")
+    L.append("")
+
+    L.append("## Public finance")
+    L.append(f"- Tax revenue (income tax {g.income_tax_rate:.0%}): ${g.revenue:,.0f}")
+    L.append(f"- Civilian budget ({g.civilian_share:.0%}): ${g.civilian_budget:,.0f}")
+    L.append(f"- Defense budget ({g.defense_share:.0%}): ${g.defense_budget:,.0f}")
+    L.append("")
+
+    L.append("## Population")
+    L.append("| Stratum | Size | Income/capita | SoL | Loyalty |")
+    L.append("|---|--:|--:|--:|--:|")
+    for p in s.pops.values():
+        pc = p.income / p.size if p.size else 0.0
+        L.append(
+            f"| {p.name} | {p.size:,.0f} | ${pc:,.0f} | {p.sol:.2f} | {p.loyalty:.2f} |"
+        )
     L.append("")
     L.append("| Good | Price | Base | Supply |")
     L.append("|---|--:|--:|--:|")
