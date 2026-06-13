@@ -130,13 +130,16 @@ __HEAD_EXTRA__
 </div>
 
 <script>
-__API__
-
+// Helpers first: the API block below may run an immediate bootstrap that
+// calls boot()/$, so these must be initialised before it (avoids a
+// temporal-dead-zone "Cannot access $ before initialization").
 let STATE = null;
 const orders = [];
 const $ = (id) => document.getElementById(id);
 const fmt = (n) => (n==null?'—':Number(n).toLocaleString(undefined,{maximumFractionDigits:0}));
 function boot(msg, err){ const b=$('boot'); b.textContent=msg; b.className=err?'err':''; }
+
+__API__
 
 async function start(){
   try {
