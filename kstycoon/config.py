@@ -18,6 +18,14 @@ class Config:
     market_iterations: int = 25        # fixed-point iterations per year
     market_damping: float = 0.5        # damping on price updates for stability
 
+    # --- per-period equilibrium ---
+    # The economy is solved to a (fuzzy) equilibrium each period by iterating
+    # incomes <-> consumption <-> prices to a joint fixed point, rather than
+    # taking a single damped step and advancing. This kills year-to-year
+    # oscillation: the reported year IS the settled state.
+    equilibrium_iterations: int = 60
+    equilibrium_tol: float = 1e-4      # stop early when prices stop moving
+
     # --- manpower ---
     # Readiness level -> which manpower tiers are callable (cumulative).
     # 1 Routine, 2 Alert, 3 Partial mobilization, 4 General mobilization.

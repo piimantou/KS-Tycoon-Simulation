@@ -93,21 +93,37 @@ selection, and richer charts.
 
 Pure, deterministic, no RNG:
 
+**Fast vs slow variables.** Within a period the *fast* variables (prices,
+production, incomes, consumption) are solved to a **joint equilibrium** — a fixed
+point reached by iterating incomes↔consumption↔prices to convergence — so the
+reported year is a settled state, not a transient mid-swing. The *slow* stocks
+(population, treasury, debt, forex, pop wealth, capacity) evolve **between**
+periods.
+
 1. **Projects** — tick lead times; on completion apply adjudicated `StateDelta`s.
 2. **Manpower pool** — sized from readiness (1 volunteers … 4 general mobilisation).
-3. **Labour drain** — the call-up is pulled from *non-essential* sector labour
-   (essential = food etc. are shielded → the economy↔manpower tradeoff).
-4. **Production** — sector output = labour × productivity × efficiency; emits
-   supply and input demand.
-5. **Consumption** — pop strata buy their needs baskets → demand.
-6. **Market** — clear prices (band-clamped; importable goods capped at import price).
-7. **Procurement** — spend the defense budget; domestic gated by arms capacity,
-   imports by money; deliver tokens to the stockpile.
+3. **Employment** — derived from pops: `national labour force × labour_share`,
+   minus a **transient** conscription draw from non-essential sectors (shielding
+   essentials). The draw is *not* persisted, so it no longer compounds and
+   demobilisation returns workers; employment grows with population.
+4. **Supply** — sector output = employment × productivity × efficiency (fixed
+   within the period); emits supply + intermediate demand.
+5. **Equilibrium solve** — iterate incomes (value-added → wages/surplus →
+   pop income) ↔ consumption (affordability = disposable income vs basket cost)
+   ↔ prices (band-clamped; importable goods capped at import price) to a fixed
+   point.
+6. **Revenue → budgets** — income tax + state-enterprise surplus → civilian /
+   defense envelopes.
+7. **Procurement** — domestic gated by arms capacity; imports gated by **money
+   and the foreign-exchange reserve**; deliver tokens to the stockpile.
 8. **Man the force** — allocate men to owned equipment; equipment without men
-   stays in **Training** (the readiness gate from the manpower policy).
-9. **Budget** — reconcile civilian + defense envelopes into treasury / debt.
-10. **Stability** — standard-of-living → loyalty → politically-weighted stability.
-11. **Macro** — recompute output value; advance the year; clear per-turn inputs.
+   stays in **Training**.
+9. **Budget + debt service** — reconcile envelopes; charge interest on debt;
+   deficits accrue to debt (vs a credit limit).
+10. **Forex** — exports replenish the reserve; procurement imports drain it.
+11. **Stability** — standard-of-living → loyalty → politically-weighted stability.
+12. **Wealth** — pops save (disposable income − consumption) into a wealth stock.
+13. **Demographics** — population (and strata) grow from standard of living.
 
 ## Validation fixture: South Korea, 1924
 
@@ -122,22 +138,33 @@ python -m kstycoon.cli report /tmp/sk.json
 python -m unittest discover -s tests
 ```
 
-## Known gaps / roadmap
+## Roadmap
 
-- **Currency calibration.** GDP is currently the value of production in *model
-  price units* (~4.2M), not the headline $4.4bn. Mapping units → currency (a
-  price-scale balancing pass) is a TODO; the structure is in place.
-- **Full token catalogue & umpire prices.** Only a representative subset of the
-  Y0 sheet's units is encoded; the full list + real domestic/import price
-  estimates come next (likely via an importer for the existing `.xlsx`).
-- **Three procurement channels** (Domestic / Japanese / Western imports) — V1
-  uses a single generic import channel; split later.
-- **Pops depth** — income/wages, a flat income tax, and computed budgets are in
-  (done). Still ahead: progressive/per-strata tax incidence, wealth
-  accumulation, migration, and demographic growth tied to standard of living.
-- **Laws/policies** as first-class parameter modifiers (tariffs, franchise,
-  land reform, mobilization) beyond the readiness lever.
-- **Stockpiles & ammo** consumption, capital works (depots/airfields/forts),
-  and a feedback path for tactical losses/territory.
-- **Local web UI** for non-technical umpires: guided initial-state encoding +
-  per-turn numeric decision entry over this engine.
+**Workstream A — make the economy behave (done).** Transient conscription
+(no more decay), employment derived from pops, per-period equilibrium solve,
+SoL-driven demographics, and stock-flow stocks (pop wealth, debt + interest,
+forex reserve). GDP/cap calibrated to ~$381 in the opening year.
+
+**Workstream B — make it richer (next).**
+- **Capacity + TFP per sector**: expansion CapEx (grows capacity, lead time) vs
+  R&D (grows TFP); discrete tech bumps may step input bundles.
+- **More goods/sectors** and an inter-sector input matrix (deeper supply chain).
+- **CapEx vs OpEx**: bill recurring upkeep in money (maintenance tokens × cost,
+  sector/admin overhead) — currently maintenance is tracked only as tokens.
+- **Full token catalogue & real prices** (import the Y0 `.xlsx`); split imports
+  into Japanese / Western channels.
+
+**Workstream C — player-input layer.** Driven by the umpire's forthcoming design
+doc (decision vocabulary, cadence, mechanical-vs-adjudicated split).
+
+**Known simplifications still open.**
+- Civilian intermediate imports (coal/steel/machinery) cap prices but are **not**
+  yet billed against forex — only *procurement* imports are. Full balance-of-
+  payments needs a trade-price calibration pass (with B).
+- Demographics grow strata proportionally; **migration/urbanisation** between
+  strata is a later refinement.
+- Tax is flat; **progressive/per-strata incidence** is future.
+- **Laws/policies** as first-class modifiers (tariffs, franchise, land reform)
+  beyond the readiness and tax levers.
+- **Ammo consumption**, capital works (depots/airfields/forts), and a feedback
+  path for tactical losses/territory.

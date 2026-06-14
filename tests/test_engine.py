@@ -111,6 +111,91 @@ class TickTests(unittest.TestCase):
         self.assertGreater(res.state.arms["small_arms"].capacity, before)
 
 
+class DynamicsTests(unittest.TestCase):
+    """Workstream A: the economy must behave over time."""
+
+    def setUp(self) -> None:
+        self.state = south_korea_y0.build()
+
+    def _svc_labour(self, s):
+        return s.labour_force * s.sectors["services"].labour_share
+
+    def test_no_labour_decay(self):
+        # Regression: conscription used to permanently shrink non-essential
+        # sectors, decaying middle-class income to zero. It must not anymore.
+        s = self.state
+        first = None
+        for _ in range(7):
+            s = tick(s).state
+            mid = s.pops["middle"]
+            if first is None:
+                first = mid.income / mid.size
+        last = s.pops["middle"].income / s.pops["middle"].size
+        self.assertGreaterEqual(last, first * 0.95)        # stable, not collapsing
+        self.assertGreater(self._svc_labour(s), 0.0)
+
+    def test_conscription_is_transient(self):
+        # Even at partial mobilisation, employment is recomputed fresh each year
+        # (grows with population) rather than compounding downward.
+        self.state.manpower.readiness = 3
+        s = self.state
+        a = tick(s).state
+        b = tick(a).state
+        self.assertGreater(self._svc_labour(b), self._svc_labour(a))
+
+    def test_population_grows(self):
+        s = self.state
+        p0 = s.manpower.population
+        for _ in range(5):
+            s = tick(s).state
+        self.assertGreater(s.manpower.population, p0)
+        # strata scale with the population
+        self.assertGreater(s.pops["rural_lower"].size, 8_000_000)
+
+    def test_wealth_accumulates_for_savers(self):
+        res = tick(self.state)
+        self.assertGreater(res.state.pops["upper"].wealth, 0.0)
+
+    def test_equilibrium_settles(self):
+        # Two ticks at steady (empty) policy should leave prices essentially
+        # unchanged — the per-period solve reaches a stable fixed point.
+        self.state.new_project_ids = []
+        self.state.procurement_orders = []
+        s1 = tick(self.state).state
+        s1.new_project_ids = []
+        s1.procurement_orders = []
+        s2 = tick(s1).state
+        for gid, g in s2.goods.items():
+            base = s1.goods[gid].price
+            if base > 0:
+                self.assertLess(abs(g.price - base) / base, 0.02, f"{gid} unstable")
+
+    def test_debt_interest_accrues(self):
+        s = self.state
+        s.new_project_ids = []
+        s.procurement_orders = []
+        s.government.income_tax_rate = 0.0   # no revenue -> no spending
+        s.government.debt = 100_000_000
+        s.government.interest_rate = 0.05
+        out = tick(s).state
+        self.assertAlmostEqual(out.government.debt, 105_000_000, delta=10_000)
+
+    def test_forex_gates_imports(self):
+        s = self.state
+        s.government.forex_reserve = 0.0
+        s.government.export_earnings = 0.0
+        s.procurement_orders = [m_order("rifles", "import", 100)]
+        s.new_project_ids = []
+        res = tick(s)
+        self.assertEqual(res.delivered["rifles"]["import"], 0)
+        self.assertTrue(any("forex" in w.lower() for w in res.warnings))
+
+
+def m_order(token, channel, qty):
+    from kstycoon import model as m
+    return m.ProcurementOrder(token, channel, qty)
+
+
 class WebAppTests(unittest.TestCase):
     def _app(self):
         import tempfile

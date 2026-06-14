@@ -15,9 +15,11 @@ def render(res: TickResult) -> str:
 
     g = s.government
     L.append("## Economy")
+    L.append(f"- Population: {s.manpower.population:,.0f}")
     L.append(f"- GDP: ${s.gdp:,.0f}  (per capita ${s.gdp / s.manpower.population:,.0f})")
     L.append(f"- Stability: {s.stability:.2f}")
-    L.append(f"- Treasury: ${g.treasury:,.0f}   Debt: ${g.debt:,.0f}")
+    L.append(f"- Treasury: ${g.treasury:,.0f}   Debt: ${g.debt:,.0f}   "
+             f"Forex reserve: ${g.forex_reserve:,.0f}")
     L.append("")
 
     L.append("## Public finance")
@@ -27,19 +29,20 @@ def render(res: TickResult) -> str:
     L.append("")
 
     L.append("## Population")
-    L.append("| Stratum | Size | Income/capita | SoL | Loyalty |")
-    L.append("|---|--:|--:|--:|--:|")
+    L.append("| Stratum | Size | Income/capita | SoL | Loyalty | Wealth |")
+    L.append("|---|--:|--:|--:|--:|--:|")
     for p in s.pops.values():
         pc = p.income / p.size if p.size else 0.0
         L.append(
-            f"| {p.name} | {p.size:,.0f} | ${pc:,.0f} | {p.sol:.2f} | {p.loyalty:.2f} |"
+            f"| {p.name} | {p.size:,.0f} | ${pc:,.0f} | {p.sol:.2f} "
+            f"| {p.loyalty:.2f} | ${p.wealth:,.0f} |"
         )
     L.append("")
     L.append("| Good | Price | Base | Supply |")
     L.append("|---|--:|--:|--:|")
-    for gid, g in s.goods.items():
+    for gid, gd in s.goods.items():
         L.append(
-            f"| {g.name} | {g.price:,.2f} | {g.base_price:,.2f} "
+            f"| {gd.name} | {gd.price:,.2f} | {gd.base_price:,.2f} "
             f"| {res.sector_output.get(gid, 0.0):,.0f} |"
         )
     L.append("")

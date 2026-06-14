@@ -69,9 +69,11 @@ __HEAD_EXTRA__
   <h1>KS-TYCOON · UMPIRE CONSOLE</h1>
   <span class="stat">Nation <b id="h-nation">—</b></span>
   <span class="stat">FY <b id="h-year">—</b></span>
+  <span class="stat">Pop <b id="h-pop">—</b></span>
   <span class="stat">GDP/cap <b id="h-gdp">—</b></span>
   <span class="stat">Stability <b id="h-stab">—</b></span>
   <span class="stat">Treasury <b id="h-treasury">—</b></span>
+  <span class="stat">Debt <b id="h-debt">—</b></span>
   <span class="stat" style="margin-left:auto"><button class="mini" id="reset">Reset to Y0</button></span>
 </header>
 <div id="boot">Starting…</div>
@@ -115,7 +117,8 @@ __HEAD_EXTRA__
       <div id="finance" class="muted">Run a year to compute revenue &amp; budgets.</div></div>
     <div class="panel"><h2>Population</h2>
       <table><thead><tr><th>Stratum</th><th class="num">Size</th>
-        <th class="num">Income/cap</th><th class="num">SoL</th><th class="num">Loyalty</th></tr></thead>
+        <th class="num">Income/cap</th><th class="num">SoL</th><th class="num">Loyalty</th>
+        <th class="num">Wealth</th></tr></thead>
         <tbody id="pops"></tbody></table></div>
     <div class="panel"><h2>Market</h2>
       <table><thead><tr><th>Good</th><th class="num">Price</th><th class="num">Base</th></tr></thead>
@@ -154,9 +157,11 @@ function render(){
   const s = STATE, g = s.government, mp = s.manpower;
   $('h-nation').textContent = s.nation;
   $('h-year').textContent = s.year;
+  $('h-pop').textContent = fmt(mp.population);
   $('h-gdp').textContent = '$' + fmt(s.gdp / mp.population);
   $('h-stab').textContent = (s.stability).toFixed(2);
   $('h-treasury').textContent = '$' + fmt(g.treasury);
+  $('h-debt').textContent = '$' + fmt(g.debt);
   $('tax').value = g.income_tax_rate; $('lbl-tax').textContent = (g.income_tax_rate*100).toFixed(0)+'%';
   $('civ').value = g.civilian_share; $('def').value = g.defense_share;
   $('readiness').value = mp.readiness;
@@ -180,7 +185,7 @@ function render(){
     const pc = p.size ? p.income/p.size : 0;
     return `<tr><td>${p.name}</td><td class="num">${fmt(p.size)}</td>
       <td class="num">$${fmt(pc)}</td><td class="num">${(p.sol).toFixed(2)}</td>
-      <td class="num">${(p.loyalty).toFixed(2)}</td></tr>`;
+      <td class="num">${(p.loyalty).toFixed(2)}</td><td class="num">$${fmt(p.wealth)}</td></tr>`;
   }).join('');
   $('goods').innerHTML = Object.values(s.goods).map(gd =>
     `<tr><td>${gd.name}</td><td class="num">${gd.price.toFixed(2)}</td>
@@ -234,7 +239,8 @@ $('run').addEventListener('click', async () => {
       <tr><td>Defense budget</td><td class="num">$${fmt(g.defense_budget)}</td></tr>
       <tr><td>Procurement spend</td><td class="num">$${fmt(r.procurement_cost)}</td></tr>
       <tr><td>Personnel (wages)</td><td class="num">$${fmt(r.personnel_cost)}</td></tr>
-      <tr><td>Project spend</td><td class="num">$${fmt(r.project_cost)}</td></tr></table>`;
+      <tr><td>Project spend</td><td class="num">$${fmt(r.project_cost)}</td></tr>
+      <tr><td>Forex reserve</td><td class="num">$${fmt(g.forex_reserve)}</td></tr></table>`;
 
     const op = r.operational_tokens, tr = r.training_tokens;
     const keys = new Set([...Object.keys(op), ...Object.keys(tr)]);

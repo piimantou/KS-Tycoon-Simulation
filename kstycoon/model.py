@@ -38,13 +38,15 @@ class Good:
 
 @dataclass
 class Sector:
-    """A production sector. Output scales with employed labour × productivity ×
+    """A production sector. Employment is derived each period from the national
+    labour force × ``labour_share`` (so it grows with population and shrinks
+    transiently under conscription); output = employment × productivity ×
     efficiency, consuming input goods per unit of output."""
 
     id: str
     name: str
     output_good: Optional[str]                 # good id produced (None = pure service)
-    labour: float                              # workers employed
+    labour_share: float                        # fraction of the national labour force
     productivity: float                        # output units / worker / year (at eff=1)
     efficiency: float = 1.0                    # capital/power/skill multiplier
     inputs_per_output: dict[str, float] = field(default_factory=dict)
@@ -71,6 +73,7 @@ class PopStratum:
     loyalty: float = 0.5                       # 0..1, updated from standard of living
     income: float = 0.0                        # gross annual income (currency), computed
     sol: float = 1.0                           # standard of living 0..1, computed
+    wealth: float = 0.0                        # accumulated savings stock (currency)
 
 
 # --------------------------------------------------------------------------- #
@@ -160,6 +163,9 @@ class Manpower:
     conscription_ii_fraction: float            # of population (general mobilisation)
     readiness: int = 1                         # 1..4
     base_wage: float = 0.0                     # annual wage per operational soldier
+    # --- demographics (population is no longer static) ---
+    base_growth_rate: float = 0.005            # annual population growth at neutral SoL
+    growth_sol_sensitivity: float = 0.04       # extra growth per unit of SoL above 0.5
     # carried accounting (recomputed each tick):
     active_training: float = 0.0
     active_operational: float = 0.0
@@ -175,6 +181,11 @@ class Government:
     # --- how computed revenue is split into spending envelopes ---
     civilian_share: float = 0.5                # of revenue -> development
     defense_share: float = 0.5                 # of revenue -> procurement + upkeep
+    # --- stocks & financing (stock-flow consistency) ---
+    interest_rate: float = 0.0                 # annual interest charged on debt
+    credit_limit: Optional[float] = None       # max debt before a financing warning
+    forex_reserve: float = 0.0                 # foreign exchange stock for imports
+    export_earnings: float = 0.0               # annual forex inflow (exports)
     # --- computed each tick ---
     revenue: float = 0.0
     civilian_budget: float = 0.0               # ministries / development envelope
