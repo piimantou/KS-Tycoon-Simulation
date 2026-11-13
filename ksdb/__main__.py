@@ -5,13 +5,16 @@
     python -m ksdb replay  GAME          recompute the whole ledger from setup
     python -m ksdb report  GAME          regenerate REPORT.md
     python -m ksdb new     NAME          scaffold an empty game
+    python -m ksdb site    [-o DIR]      build the browsable page for every game (default _site/)
 """
 from __future__ import annotations
 
 import argparse
 import sys
 
-from . import engine, report, store
+from pathlib import Path
+
+from . import engine, report, site, store
 
 
 def _new(name: str, start: str) -> None:
@@ -45,7 +48,12 @@ def main(argv=None) -> int:
     n = sub.add_parser("new")
     n.add_argument("game")
     n.add_argument("--start", default="1920-01")
+    sub.add_parser("site").add_argument("-o", "--out", default="_site")
     args = ap.parse_args(argv)
+
+    if args.cmd == "site":
+        print(f"wrote {site.build(Path(args.out))}")
+        return 0
 
     if args.cmd == "new":
         _new(args.game, args.start)

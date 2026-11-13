@@ -31,7 +31,11 @@ db/
 3. Read `REPORT.md`, commit.
 
 Other commands: `check` (broken references and unfilled data), `replay`
-(recompute the whole ledger from `setup/`), `report`, `new NAME`.
+(recompute the whole ledger from `setup/`), `report`, `new NAME`, and `site`
+(build the browsable page into `_site/`).
+
+Every push that touches `db/` or `ksdb/` redeploys that page to GitHub Pages:
+all games, any tick, with the exogenous rows in force alongside the results.
 
 `advance` only ever appends. Changing a past input, a recipe, or a parameter
 does not touch resolved ticks until you run `replay`, and then `git diff` shows

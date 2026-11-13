@@ -1,0 +1,47 @@
+name: Deploy database to Pages
+
+# Pages must be enabled once in Settings -> Pages -> Source: "GitHub Actions".
+# Commits made by the "Umpire database" workflow do not trigger `push`, so a
+# tick resolved from the Actions tab redeploys through `workflow_run` instead.
+on:
+  push:
+    branches: ["claude/clever-clarke-5e3q4s", "claude/serene-heisenberg-p16cc9", "main"]
+    paths: ["db/**", "ksdb/**", ".github/workflows/pages.yml"]
+  workflow_run:
+    workflows: ["Umpire database"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-deploy:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.event == 'workflow_dispatch' &&
+       github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch || github.ref }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m ksdb site -o _site
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4

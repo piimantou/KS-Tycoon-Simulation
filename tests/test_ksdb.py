@@ -127,5 +127,17 @@ class Construction(unittest.TestCase):
         self.assertEqual([round(grain(x), 6) for x in t], [0, 0, 0.5, 1])
 
 
+class Site(unittest.TestCase):
+    def test_page_embeds_every_ledger_table_for_each_game(self):
+        import tempfile
+        from ksdb import site
+        with tempfile.TemporaryDirectory() as d:
+            html = site.build(Path(d)).read_text(encoding="utf-8")
+        self.assertNotIn("/*DATA*/null", html)
+        game = site.collect()["games"]["example"]
+        self.assertEqual(set(game["ledger"]), set(engine.headers(store.load_ref())))
+        self.assertTrue(game["ledger"]["indicators"]["rows"])
+
+
 if __name__ == "__main__":
     unittest.main()
