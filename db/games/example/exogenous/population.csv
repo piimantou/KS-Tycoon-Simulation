@@ -1,0 +1,11 @@
+tick,until,class,variable,value,note
+1920-01,,*,dependency,0.5,workbook Consumption!H
+1920-01,,L1,births,100,workbook Population!H
+1920-01,,L1,promotion_rate,0.02,workbook Population!M
+1920-01,,L2,promotion_rate,0.01,workbook Population!N
+1920-01,,L3,promotion_rate,0.005,workbook Population!O
+1920-01,,L4,promotion_rate,0.001,workbook Population!P
+1920-06,,L1,promotion_rate,0.05,workbook Population!M8
+1920-06,,L2,promotion_rate,0.02,workbook Population!N8
+1920-06,,L3,promotion_rate,0.01,workbook Population!O8
+1920-06,,L4,promotion_rate,0.01,workbook Population!P8

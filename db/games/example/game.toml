@@ -1,0 +1,8 @@
+name = "Example"
+start = "1920-01"
+seed = 1920
+
+# Guide III.B: promotions roll in May and November. Set to [1,2,...,12] for the workbook's monthly roll.
+promotion_months = [5, 11]
+
+[params]

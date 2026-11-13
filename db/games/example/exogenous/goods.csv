@@ -1,0 +1,12 @@
+tick,until,scope,variable,value,note
+1920-01,,Grain,foreign_price,20,placeholder
+1920-01,,Wood,foreign_price,20,placeholder
+1920-01,,Cloth,foreign_price,30,placeholder
+1920-01,,Services,foreign_price,30,placeholder
+1920-01,,Fertilizer,foreign_price,30,placeholder
+1920-01,,Coal,foreign_price,30,placeholder
+1920-01,,Electricity,foreign_price,30,placeholder
+1920-01,,Tools,foreign_price,40,placeholder
+1920-01,,Machine Equipment,foreign_price,60,placeholder
+1920-01,,Electrical Equipment,foreign_price,80,placeholder
+1920-08,1920-10,Grain,output_modifier,0.7,example - three-month drought

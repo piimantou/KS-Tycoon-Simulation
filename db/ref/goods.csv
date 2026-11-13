@@ -1,0 +1,12 @@
+good,capital,note
+Grain,,
+Wood,,
+Cloth,,
+Services,,
+Fertilizer,,
+Coal,,
+Electricity,,
+Tools,K1,
+Machine Equipment,K2,
+Electrical Equipment,K3,
+Construction,,produced by Construction Services; one tick's output is that tick's building capacity

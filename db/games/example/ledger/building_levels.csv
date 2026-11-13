@@ -1,0 +1,32 @@
+tick,building,owner,level,operating,jobs,staffing,units,banked_construction
+1920-01,[Undeveloped] Rural Production,private,1,2,10000,1,2,0
+1920-02,[Undeveloped] Rural Production,private,1,2,10000,1,2,0
+1920-03,Grain Farm,government,1,0,0,,1,0
+1920-03,[Undeveloped] Rural Production,private,1,2,10000,1,2,0
+1920-04,Grain Farm,government,1,1,5000,0.6867,0.5,0
+1920-04,Grain Farm,government,2,0,0,,0.5,0
+1920-04,[Undeveloped] Rural Production,private,1,2,10000,0.6867,2,0
+1920-05,Grain Farm,government,1,0.5,2500,0.6898,0.5,0
+1920-05,Grain Farm,government,2,0.5,2500,0.6898,0.5,0
+1920-05,[Undeveloped] Rural Production,private,1,2,10000,0.6898,2,0
+1920-06,Grain Farm,government,1,0.5,2500,0.6965,0.5,0
+1920-06,Grain Farm,government,2,0.5,2500,0.6965,0.5,0
+1920-06,[Undeveloped] Rural Production,private,1,2,10000,0.6965,2,0
+1920-07,Grain Farm,government,1,0.5,2500,0.7033,0.5,0
+1920-07,Grain Farm,government,2,0.5,2500,0.7033,0.5,0
+1920-07,[Undeveloped] Rural Production,private,1,2,10000,0.7033,2,0
+1920-08,Grain Farm,government,1,0.5,2500,0.7101,0.5,0
+1920-08,Grain Farm,government,2,0.5,2500,0.7101,0.5,0
+1920-08,[Undeveloped] Rural Production,private,1,2,10000,0.7101,2,0
+1920-09,Grain Farm,government,1,0.5,2500,0.7169,0.5,0
+1920-09,Grain Farm,government,2,0.5,2500,0.7169,0.5,0
+1920-09,[Undeveloped] Rural Production,private,1,2,10000,0.7169,2,0
+1920-10,Grain Farm,government,1,0.5,2500,0.7237,0.5,0
+1920-10,Grain Farm,government,2,0.5,2500,0.7237,0.5,0
+1920-10,[Undeveloped] Rural Production,private,1,2,10000,0.7237,2,0
+1920-11,Grain Farm,government,1,0.5,2500,0.7288,0.5,0
+1920-11,Grain Farm,government,2,0.5,2500,0.7288,0.5,0
+1920-11,[Undeveloped] Rural Production,private,1,2,10000,0.7288,2,0
+1920-12,Grain Farm,government,1,0.5,2500,0.7356,0.5,0
+1920-12,Grain Farm,government,2,0.5,2500,0.7356,0.5,0
+1920-12,[Undeveloped] Rural Production,private,1,2,10000,0.7356,2,0

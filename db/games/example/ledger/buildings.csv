@@ -1,0 +1,24 @@
+tick,building,owner,size,K1,K2,K3,output_value,input_cost,value_added
+1920-01,[Undeveloped] Rural Production,private,2,0,0,0,105,0,105
+1920-02,[Undeveloped] Rural Production,private,2,0,0,0,105,0,105
+1920-03,Grain Farm,government,1,0,0,0,0,0,0
+1920-03,Grain Farm,government,1,0,0,0,0,0,0
+1920-03,[Undeveloped] Rural Production,private,2,0,0,0,105,0,105
+1920-04,Grain Farm,government,1,500,0,0,0,0,0
+1920-04,[Undeveloped] Rural Production,private,2,0,0,0,72.1,0,72.1
+1920-05,Grain Farm,government,1,500,0,0,0,103.4644,-103.4644
+1920-05,[Undeveloped] Rural Production,private,2,0,0,0,72.4251,0,72.4251
+1920-06,Grain Farm,government,1,500,0,0,0,104.4814,-104.4814
+1920-06,[Undeveloped] Rural Production,private,2,0,0,0,73.1369,0,73.1369
+1920-07,Grain Farm,government,1,500,0,0,0,105.4983,-105.4983
+1920-07,[Undeveloped] Rural Production,private,2,0,0,0,73.8488,0,73.8488
+1920-08,Grain Farm,government,1,500,0,0,0,106.5153,-106.5153
+1920-08,[Undeveloped] Rural Production,private,2,0,0,0,66.0395,0,66.0395
+1920-09,Grain Farm,government,1,500,0,0,0,107.5322,-107.5322
+1920-09,[Undeveloped] Rural Production,private,2,0,0,0,66.67,0,66.67
+1920-10,Grain Farm,government,1,500,0,0,0,108.5492,-108.5492
+1920-10,[Undeveloped] Rural Production,private,2,0,0,0,67.3005,0,67.3005
+1920-11,Grain Farm,government,1,500,0,0,0,109.322,-109.322
+1920-11,[Undeveloped] Rural Production,private,2,0,0,0,76.5254,0,76.5254
+1920-12,Grain Farm,government,1,500,0,0,0,110.339,-110.339
+1920-12,[Undeveloped] Rural Production,private,2,0,0,0,77.2373,0,77.2373

@@ -1,0 +1,26 @@
+# Design-level dials shared by every game. A game's game.toml [params] table overrides these.
+
+# Consumption sheet: demand = pop * weight * (1 + dependency) / 10
+bundle_scale = 0.1
+
+# How accumulated capital turns into building levels:
+#   "continuous" - units upgrade fractionally as capital arrives (2,500 K1 on 5 units at 1,000/unit -> 2.5 units at level II)
+#   "unit"       - same, but only whole units upgrade; the remainder waits in the pool
+#   "building"   - all-or-nothing: the whole building upgrades once the pool covers every unit
+upgrade_mode = "continuous"
+
+# Share of each building's capital pool lost per tick. 0 = capital never wears out.
+capital_depreciation = 0.0
+
+# May a more-educated worker take a vacant job of a lower class?
+labour_downfill = true
+
+# The good whose output per tick caps how much can be built or upgraded that tick.
+# A recipe's `construction` column is the units needed to bring one unit of the
+# building up to that level (level 1 = build it new). Blank = free.
+construction_good = "Construction"
+
+# Owners served first, in order, when construction is short; everyone else then
+# shares what is left pro rata. [] = pure pro rata. ["government"] = the state
+# builds first and private works get the remainder.
+construction_priority = []
