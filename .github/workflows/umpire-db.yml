@@ -2,9 +2,9 @@ name: Umpire database
 
 on:
   push:
-    paths: ["db/**", "ksdb/**", "tests/test_ksdb.py", ".github/workflows/umpire-db.yml"]
+    paths: ["db/**", "ksdb/**", "tests/**", ".github/workflows/umpire-db.yml"]
   pull_request:
-    paths: ["db/**", "ksdb/**", "tests/test_ksdb.py"]
+    paths: ["db/**", "ksdb/**", "tests/**"]
   workflow_dispatch:
     inputs:
       game:
@@ -25,7 +25,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: python -m unittest tests.test_ksdb
+      - run: python -m unittest discover -s tests
       - name: Validate every game
         run: |
           for g in db/games/*/; do python -m ksdb check "$(basename "$g")"; done
