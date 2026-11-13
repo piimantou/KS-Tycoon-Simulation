@@ -8,6 +8,12 @@ design and the decisions behind it.
 This repo contains the **deterministic engine core**, the **South Korea 1924**
 validation scenario, and a **first-pass local web UI** for the umpire.
 
+> **Two models live here.** [`db/`](db/README.md) with the `ksdb` package is the
+> umpire's database for the *Kriegsspiel Economic System - Expanded* design
+> (monthly ticks, building-level I-O recipes, five education classes). The
+> `kstycoon` package documented below is the earlier annual, sector-based
+> engine; it is untouched and independent.
+
 ## Requirements
 
 Python 3.11+. No third-party dependencies for the engine or tests (stdlib only).

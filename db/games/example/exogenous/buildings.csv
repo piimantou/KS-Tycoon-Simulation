@@ -1,0 +1,3 @@
+tick,building,owner,variable,value,source,note
+1920-03,Grain Farm,government,size,1,government_investment,example - one unit of state grain farm
+1920-04,Grain Farm,government,K1,500,government_investment,example - half the K1 needed for level 2

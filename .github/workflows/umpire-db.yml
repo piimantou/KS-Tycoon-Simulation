@@ -1,0 +1,55 @@
+name: Umpire database
+
+on:
+  push:
+    paths: ["db/**", "ksdb/**", "tests/test_ksdb.py", ".github/workflows/umpire-db.yml"]
+  pull_request:
+    paths: ["db/**", "ksdb/**", "tests/test_ksdb.py"]
+  workflow_dispatch:
+    inputs:
+      game:
+        description: Game folder under db/games
+        default: example
+      ticks:
+        description: Ticks to resolve
+        default: "1"
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m unittest tests.test_ksdb
+      - name: Validate every game
+        run: |
+          for g in db/games/*/; do python -m ksdb check "$(basename "$g")"; done
+
+  advance:
+    if: github.event_name == 'workflow_dispatch'
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Resolve ticks
+        env:
+          GAME: ${{ inputs.game }}
+          TICKS: ${{ inputs.ticks }}
+        run: python -m ksdb advance "$GAME" -n "$TICKS" | tee "$RUNNER_TEMP/out.txt"
+      - name: Commit the ledger
+        env:
+          GAME: ${{ inputs.game }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "db/games/$GAME"
+          git commit -m "$GAME: $(head -1 "$RUNNER_TEMP/out.txt")"
+          git push
